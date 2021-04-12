@@ -5,8 +5,13 @@
 package it.polito.tdp.corsi;
 
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.corsi.model.Corso;
 import it.polito.tdp.corsi.model.Model;
+import it.polito.tdp.corsi.model.Studente;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -46,23 +51,113 @@ public class FXMLController {
 
     @FXML
     void corsiPerPeriodo(ActionEvent event) {
+    	txtRisultato.clear();
     	
+    	String periodoStringa=txtPeriodo.getText();
+    	Integer periodo;
+    	if(txtPeriodo.getText()==null) { //quando il campo è nllo si scrive==
+    		txtPeriodo.setText("Devi inserire 1 o 2 per il periodo didattico");
+    		return;    	}
+    	
+    	try {
+    		periodo=Integer.parseInt(periodoStringa);
+       	} catch(NumberFormatException e) {
+    		txtRisultato.setText("Devi inserire 1 o 2 per il periodo");   
+    		return;}
+    	
+    	if(periodo<1 || periodo>2) {
+    		txtRisultato.setText("Devi inserire 1 o 2 per il periodo");   
+    	}
+    	
+    	List<Corso> corsi=this.model.getCorsiByPeriodo(periodo);
+    	/*for( Corso c: corsi) {
+    		txtRisultato.appendText(c.toString()+"\n");
+    	}*/
+    	
+    	txtRisultato.setStyle("-fx-font-family: monospace"); //per lo stile ordinato
+    	
+    	StringBuilder sb=new StringBuilder();
+    	for( Corso c: corsi) {
+    		sb.append(String.format("%-8s ", c.getCodins()));
+    		sb.append(String.format("%-4d ", c.getCrediti()));
+    		sb.append(String.format("%-50s ", c.getNome()));
+    		sb.append(String.format("%-4sd\n", c.getPd()));
+    	}
+    	txtRisultato.appendText(sb.toString());
     }
 
     @FXML
     void numeroStudenti(ActionEvent event) {
+    txtRisultato.clear();
     	
+    	String periodoStringa=txtPeriodo.getText();
+    	Integer periodo;
+    	if(txtPeriodo.getText()==null) { //quando il campo è nllo si scrive==
+    		txtPeriodo.setText("Devi inserire 1 o 2 per il periodo didattico");
+    		return;    	}
+    	
+    	try {
+    		periodo=Integer.parseInt(periodoStringa);
+       	} catch(NumberFormatException e) {
+    		txtRisultato.setText("Devi inserire 1 o 2 per il periodo");   
+    		return;}
+    	
+    	if(periodo<1 || periodo>2) {
+    		txtRisultato.setText("Devi inserire 1 o 2 per il periodo");   
+    	}
+    	Map<Corso,Integer> corsiIscrizioni=this.model.getIscrittiByPeriodo(periodo);
+    	for(Corso c:corsiIscrizioni.keySet()) {
+    		txtRisultato.appendText(c.toString()+"\n");
+    		Integer n=+corsiIscrizioni.get(c);
+    		txtRisultato.appendText("\t" +n+"\n");
+    	}
     }
 
     @FXML
     void stampaDivisione(ActionEvent event) {
+    	txtRisultato.clear();
+    	 String codice=txtCorso.getText();
+     	
+     	if(!model.esisteCorso(codice)) {
+     		txtRisultato.appendText("Il corso non esiste");
+     		return;}
+     	
+          	Map<String,Integer> divisione=model.getDivisioneCDS_due(codice);
+     	
+     	for(String cds:divisione.keySet()) {
+     		txtRisultato.appendText(cds+" "+divisione.get(cds)+"\n");
+     	}
 
     }
 
     @FXML
     void stampaStudenti(ActionEvent event) {
+    	txtRisultato.clear();
+    String codice=txtCorso.getText();
+    	
+    	if(!model.esisteCorso(codice)) {
+    		txtRisultato.appendText("Il corso non esiste");
+    		return;}
+    	
+    	List<Studente> studenti=model.getStudentiByCorso(codice);
+    	
+    	if(studenti.size()==0) {
+    		txtRisultato.appendText("Il corso non ha iscritti");
+    		return;
+    	}
+    	 		txtRisultato.setStyle("-fx-font-family: monospace"); //per lo stile ordinato
+        	
+        	StringBuilder sb=new StringBuilder();
+        	for(Studente s:studenti) {
+        		sb.append(String.format("%-10s ",s.getMatricola() ));
+        		sb.append(String.format("%-20s ",s.getCognome() ));
+        		sb.append(String.format("%-30s ",s.getNome()));
+        		sb.append(String.format("%-10s\n",s.getCDS() ));
+        	}
+        	txtRisultato.appendText(sb.toString());
+    	}
 
-    }
+    
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
     void initialize() {
